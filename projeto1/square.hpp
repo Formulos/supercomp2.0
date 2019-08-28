@@ -10,15 +10,17 @@ class square {
     public:
         square();
         // variáveis declaradas aqui são públicas
-        int size;
         int width;
+        int height;
         int mass;
         double speedx;
         double speedy;
-        int posx;
-        int posy;
+        double posx;
+        double posy;
+        bool ci; //colision iminent
         void new_square();
-        void update_pos(int,int);
+        void colide(square);
+        void update_pos(double,double);
         void update_speed(double,double);
         
 };

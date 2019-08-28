@@ -8,44 +8,68 @@ using namespace std;
 using namespace chrono;
 // A função abaixo é chamada ao criar um objeto ExemploRect
 square::square(){
+    cout<<"\n\twidth : ";
+    //cin>>width;
+    width = 10;
+
+    cout<<"\n\tsize : ";
+    //cin>>size;
+    height = 10;
+
+    cout<<"\n\tmass : ";
+    //cin>>mass;
+    mass = 5;
+
+    cout<<"\n\tspeedx : ";
+    //cin>>speedx;
+    speedx = 5;
+
+    cout<<"\n\tspeedy : ";
+    //cin>>speedy;
+    speedy = 0;
+
+    cout<<"\n\tposx : ";
+    //cin>>posx;
+    posx = 6;
+
+    cout<<"\n\tposy : ";
+    //cin>>posy;
+    posy = 6;
+
     std::cout << "square criado\n";
 
+    ci = false;
+
 /*
-    int size = size;
+    int height = height;
     int width = width;
     int mass = mass;
     double speedx = speedx;
     double speedy = speedy;
-    int posx = posx;
-    int posy = posy;
+    double posx = posx;
+    double posy = posy;
 */
     
 }
-void square::new_square(){
-    cout<<"\n\tsize : ";
-    cin>>size;
+void square::colide(square c_square){
+    if (((c_square.posx + c_square.width) <= posx) &&
+    ((c_square.posy + c_square.height) <= posy) &&
+    ((posx + width) <= c_square.posx) &&
+    ((posy + height) <= c_square.posy)){
+     ci = false;
+    }
+    else{
+        ci = true;
+    }
+    
 
-    cout<<"\n\twidth : ";
-    cin>>width;
-
-    cout<<"\n\tmass : ";
-    cin>>mass;
-
-    cout<<"\n\tspeedx : ";
-    cin>>speedx;
-
-    cout<<"\n\tspeedy : ";
-    cin>>speedy;
-
-    cout<<"\n\tposx : ";
-    cin>>posx;
-
-    cout<<"\n\tposy : ";
-    cin>>posy;
+    //update speed here
 }
-void square::update_pos(int posx,int posy){
-    std::cout << "AAAAAAAAAAAAAAA\n";
+void square::update_pos(double new_posx,double new_posy){
+    posx = new_posx;
+    posy = new_posy;
 }
-void square::update_speed(double speedx,double speedy){
-    std::cout << "BBBBBBBBBBBBBBBBBBBB\n";
+void square::update_speed(double new_speedx,double new_speedy){
+    speedx = new_speedx;
+    speedy = new_speedy;
 }
