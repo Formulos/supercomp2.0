@@ -10,11 +10,11 @@ using namespace chrono;
 square::square(){
     cout<<"\n\twidth : ";
     //cin>>width;
-    width = 10;
+    width = 5;
 
     cout<<"\n\tsize : ";
     //cin>>size;
-    height = 10;
+    height = 5;
 
     cout<<"\n\tmass : ";
     //cin>>mass;
@@ -30,11 +30,11 @@ square::square(){
 
     cout<<"\n\tposx : ";
     //cin>>posx;
-    posx = 6;
+    posx = 30;
 
     cout<<"\n\tposy : ";
     //cin>>posy;
-    posy = 6;
+    posy = 5;
 
     std::cout << "square criado\n";
 
