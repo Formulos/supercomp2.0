@@ -8,7 +8,6 @@ class square {
     // variáveis declaradas aqui são privadas por padrão
     ;
     public:
-        square();
         // variáveis declaradas aqui são públicas
         int width;
         int height;
@@ -18,7 +17,9 @@ class square {
         double posx;
         double posy;
         bool ci; //colision iminent
-        void new_square();
+        square();
+        square(int,int,int,double,double,double,double);
+        void populate();
         void colide(square);
         void update_pos(double,double);
         void update_speed(double,double);

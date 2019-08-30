@@ -4,51 +4,23 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
+
+
 using namespace std;
 using namespace chrono;
 // A função abaixo é chamada ao criar um objeto ExemploRect
 square::square(){
-    cout<<"\n\twidth : ";
-    //cin>>width;
-    width = 5;
-
-    cout<<"\n\tsize : ";
-    //cin>>size;
-    height = 5;
-
-    cout<<"\n\tmass : ";
-    //cin>>mass;
-    mass = 5;
-
-    cout<<"\n\tspeedx : ";
-    //cin>>speedx;
-    speedx = 5;
-
-    cout<<"\n\tspeedy : ";
-    //cin>>speedy;
-    speedy = 0;
-
-    cout<<"\n\tposx : ";
-    //cin>>posx;
-    posx = 30;
-
-    cout<<"\n\tposy : ";
-    //cin>>posy;
-    posy = 5;
-
-    std::cout << "square criado\n";
-
     ci = false;
+}
+square::square(int _height,int _width,int _mass,double _speedx,double _speedy,double _posx,double _posy){
+    height = _height;
+    width = _width;
+    mass = _mass;
+    speedx = _speedx;
+    speedy = _speedy;
+    posx = _posx;
+    posy = _posy;
 
-/*
-    int height = height;
-    int width = width;
-    int mass = mass;
-    double speedx = speedx;
-    double speedy = speedy;
-    double posx = posx;
-    double posy = posy;
-*/
     
 }
 void square::colide(square c_square){
@@ -58,6 +30,7 @@ void square::colide(square c_square){
     ((posy + height) <= c_square.posy)){
      ci = false;
     }
+
     else{
         ci = true;
     }
