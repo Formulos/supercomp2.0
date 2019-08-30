@@ -24,15 +24,25 @@ square::square(int _height,int _width,int _mass,double _speedx,double _speedy,do
     
 }
 void square::colide(square c_square){
-    if (((c_square.posx + c_square.width) <= posx) &&
+    if ((((c_square.posx + c_square.width) <= posx) &&
     ((c_square.posy + c_square.height) <= posy) &&
     ((posx + width) <= c_square.posx) &&
-    ((posy + height) <= c_square.posy)){
+    ((posy + height) <= c_square.posy))){
+    cout <<"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"<< endl;
      ci = false;
+     c_square.ci = false;
     }
-
+    
     else{
+        
         ci = true;
+        double c_tmp_speedx = c_square.speedx;
+        double c_tmp_speedy = c_square.speedy;
+        c_square.speedx = ((c_square.speedx*(c_square.mass - mass)) + 2*speedx*mass)/c_square.mass+mass;
+        c_square.speedy = ((c_square.speedy*(c_square.mass - mass)) + 2*speedy*mass)/c_square.mass+mass;
+
+        speedx = ((speedx*(mass - c_square.mass)) + 2*c_tmp_speedx*mass)/c_square.mass+mass;
+        speedy = ((speedy*(mass - c_square.mass)) + 2*c_tmp_speedy*mass)/c_square.mass+mass;
     }
     
 

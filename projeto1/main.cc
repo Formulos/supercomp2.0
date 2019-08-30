@@ -10,18 +10,17 @@ using namespace chrono;
 
 
 int main(){
-    int n = 1;
+    int n = 2;
     int slow_square = 0;
     int step = 1;
-    int max_time = 8;
-    int x_boundrie = 40;
-    int y_boundrie = 40;
-    double friction = 0.1;
+    int max_time = 2;
+    int x_boundrie = 100;
+    int y_boundrie = 100;
+    double friction = 0.0;
     bool cycle_colision = false;
     double tmp_posx;
     double tmp_posy;
 
-    //igor objects = new square[n]; ja inicia n square
 
    //cria a lista de retangulos e popula ela com retangulos.
     square *objects;
@@ -30,6 +29,7 @@ int main(){
     square *new_objects; //copy of the list that will be changed first
     new_objects = new square[n];
 
+    /*
     for (int i = 0; i < n; i++){
         cout<<"\n\twidth : ";
         int width;
@@ -37,32 +37,45 @@ int main(){
         //int width = 5;
 
         cout<<"\n\tsize : ";
-        //cin>>size;
-        int height = 5;
+        int height;
+        cin>>height;
+        //int height = 5;
 
         cout<<"\n\tmass : ";
-        //cin>>mass;
-        int mass = 5;
+        int mass;
+        cin>>mass;
+        //int mass = 5;
 
         cout<<"\n\tspeedx : ";
-        //cin>>speedx;
-        double speedx = 5;
+        double speedx;
+        cin>>speedx;
+        //double speedx = 5;
 
         cout<<"\n\tspeedy : ";
-        //cin>>speedy;
-        double speedy = 0;
+        double speedy;
+        cin>>speedy;
+        //double speedy = 0;
 
         cout<<"\n\tposx : ";
-        //cin>>posx;
-        double posx = 5;
+        double posx;
+        cin>>posx;
+        //double posx = 5;
 
         cout<<"\n\tposy : ";
-        //cin>>posy;
-        double posy = 5;
+        double posy;
+        cin>>posy;
+        //double posy = 5;
+
 
         objects[i] = square(width,height,mass,speedx,speedy,posx,posy);
         new_objects[i] = objects[i];
     }
+    */
+    objects[0] = square(10,10,5,5,0,35,30);
+    objects[1] = square(10,10,5,0,0,45,30);
+    new_objects[0] = objects[0];
+    new_objects[1] = objects[1];
+
 
     //simulation loop
     for (int i = 0; i < max_time; i+=step){
@@ -82,7 +95,6 @@ int main(){
             //cout <<tmp_posx<<endl;
 
             new_objects[j].update_pos(tmp_posx, tmp_posy);
-            //add friction calculation here
             /*
             1.calculo do v
             2. angulo =arcos(vx/v)
@@ -92,12 +104,11 @@ int main(){
             */
             if (objects[j].speedx != 0 || objects[j].speedy != 0){
                 double t_speed = sqrt((pow(objects[j].speedx,2)+pow(objects[j].speedy,2)));
-                double angulo = acos(objects[j].speedx/t_speed);
+                double angulo = atan2(objects[j].speedy,objects[j].speedx);
                 t_speed = t_speed - friction * step *9.8;
                 if(t_speed<0){
                     t_speed = 0;
                     slow_square++;
-
                 }
                 new_objects[j].update_speed(t_speed * cos(angulo), t_speed*sin(angulo));
             }
@@ -109,25 +120,28 @@ int main(){
             cout <<"All squares have stoped" << endl ;
             break;
         }
+        slow_square = 0;
         
         //intercepition
         //for each square
         for (int k = 0; k < n; k++){
-            
+
             //look if one square colides with any other square...
-            for (int l = 0; l < (n-1); l++){
-                new_objects[k].colide(new_objects[l]);
+            for (int l = 0; l < n; l++){
+                if ((!(new_objects[l].ci))&&(l != k)){
+                    new_objects[l].colide(new_objects[k]);
+                }
             }
             
             // ... and the border
             if (!new_objects[k].ci){
                 if  (!(((new_objects[k].posx + new_objects[k].width) < x_boundrie) &&
-                (new_objects[k].posx > 0))){
+                        (new_objects[k].posx > 0))){
                     new_objects[k].speedx = new_objects[k].speedx * -1;
                     new_objects[k].ci = true;
                 }
                 if  (!(((new_objects[k].posy + new_objects[k].height) < y_boundrie) &&
-                (new_objects[k].posy > 0))){
+                        (new_objects[k].posy > 0))){
                     new_objects[k].speedy = new_objects[k].speedy * -1;
                     new_objects[k].ci = true;
                 }
