@@ -20,7 +20,7 @@ class square {
         square();
         square(int,int,int,double,double,double,double);
         void populate();
-        void colide(square);
+        square colide(square);
         void update_pos(double,double);
         void update_speed(double,double);
         

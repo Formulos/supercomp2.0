@@ -23,7 +23,7 @@ square::square(int _height,int _width,int _mass,double _speedx,double _speedy,do
 
     
 }
-void square::colide(square c_square){
+square square::colide(square c_square){
     if (!(((c_square.posx + c_square.width) >= posx)&&
         (c_square.posx <= (posx+width))&&
         ((c_square.posy + c_square.height) >= posy)&&
@@ -40,14 +40,14 @@ void square::colide(square c_square){
         c_square.ci = true;
         double c_tmp_speedx = c_square.speedx;
         double c_tmp_speedy = c_square.speedy;
-        c_square.speedx = ((c_square.speedx*(c_square.mass - mass)) + 2*speedx*mass)/c_square.mass+mass;
-        c_square.speedy = ((c_square.speedy*(c_square.mass - mass)) + 2*speedy*mass)/c_square.mass+mass;
+        c_square.speedx = (c_square.speedx*(c_square.mass - mass) + 2*speedx*mass)/(c_square.mass+mass);
+        c_square.speedy = (c_square.speedy*(c_square.mass - mass) + 2*speedy*mass)/(c_square.mass+mass);
 
-        speedx = ((speedx*(mass - c_square.mass)) + 2*c_tmp_speedx*mass)/c_square.mass+mass;
-        speedy = ((speedy*(mass - c_square.mass)) + 2*c_tmp_speedy*mass)/c_square.mass+mass;
+        speedx = (speedx*(mass - c_square.mass) + 2*c_tmp_speedx*mass)/(c_square.mass+mass);
+        speedy = (speedy*(mass - c_square.mass) + 2*c_tmp_speedy*mass)/(c_square.mass+mass);
     }
     
-
+    return c_square;
     //update speed here
 }
 void square::update_pos(double new_posx,double new_posy){

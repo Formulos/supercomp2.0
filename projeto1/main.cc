@@ -10,16 +10,24 @@ using namespace chrono;
 
 
 int main(){
-    int n = 2;
+    
     int slow_square = 0;
-    int step = 1;
-    int max_time = 2;
-    int x_boundrie = 100;
-    int y_boundrie = 100;
-    double friction = 0.0;
-    bool cycle_colision = false;
+
     double tmp_posx;
     double tmp_posy;
+    int x_boundrie;
+    int y_boundrie;
+
+    cin >> x_boundrie;
+    cin >> y_boundrie;
+
+    double friction;
+    cin >> friction;
+
+
+
+    int n;
+    cin >> n;
 
 
    //cria a lista de retangulos e popula ela com retangulos.
@@ -29,57 +37,61 @@ int main(){
     square *new_objects; //copy of the list that will be changed first
     new_objects = new square[n];
 
-    /*
+
+    auto start = high_resolution_clock::now();
     for (int i = 0; i < n; i++){
-        cout<<"\n\twidth : ";
+        
+        int mass;
+        cin>>mass;
+        //int mass = 5;
+        
         int width;
         cin>>width;
         //int width = 5;
 
-        cout<<"\n\tsize : ";
         int height;
         cin>>height;
         //int height = 5;
 
-        cout<<"\n\tmass : ";
-        int mass;
-        cin>>mass;
-        //int mass = 5;
-
-        cout<<"\n\tspeedx : ";
-        double speedx;
-        cin>>speedx;
-        //double speedx = 5;
-
-        cout<<"\n\tspeedy : ";
-        double speedy;
-        cin>>speedy;
-        //double speedy = 0;
-
-        cout<<"\n\tposx : ";
         double posx;
         cin>>posx;
         //double posx = 5;
 
-        cout<<"\n\tposy : ";
         double posy;
         cin>>posy;
         //double posy = 5;
+
+        double speedx;
+        cin>>speedx;
+        //double speedx = 5;
+
+        double speedy;
+        cin>>speedy;
+        //double speedy = 0;
 
 
         objects[i] = square(width,height,mass,speedx,speedy,posx,posy);
         new_objects[i] = objects[i];
     }
-    */
-    objects[0] = square(10,10,5,5,0,35,30);
-    objects[1] = square(10,10,5,0,0,45,30);
-    new_objects[0] = objects[0];
-    new_objects[1] = objects[1];
+    double step;
+    int max_time;
+    int print_freq;
+    
+    cin >>step;
+    cin >>print_freq;
+    cin >>max_time;
+    //objects[0] = square(10,10,5,5,0,35,30);
+    //objects[1] = square(10,10,5,-5,0,50,30);
+    //new_objects[0] = objects[0];
+    //new_objects[1] = objects[1];
+
 
 
     //simulation loop
     for (int i = 0; i < max_time; i+=step){
-        cout << "c_time: "<< i <<std::endl;
+            cout << max_time<< endl;
+
+        
 
         //calculates the next position of the square
         for (int j = 0; j < n; j++){
@@ -117,7 +129,7 @@ int main(){
             }
         }
         if (slow_square == n){
-            cout <<"All squares have stoped" << endl ;
+            //cout <<"All squares have stoped" << endl ;
             break;
         }
         slow_square = 0;
@@ -129,7 +141,7 @@ int main(){
             //look if one square colides with any other square...
             for (int l = 0; l < n; l++){
                 if ((!(new_objects[l].ci))&&(l != k)){
-                    new_objects[l].colide(new_objects[k]);
+                    new_objects[k] = new_objects[l].colide(new_objects[k]);
                 }
             }
             
@@ -163,17 +175,20 @@ int main(){
             }
             // temp code
             
-            /* lembra de dar update na velocidade de TODOS objetos, a unica diferança é que os coliden não mudam de posição */
-            cout <<"pos(x,y)" << objects[m].posx <<" "<<objects[m].posy << endl ;
-            cout <<"speed(x,y)" << objects[m].speedx <<" "<<objects[m].speedy << endl ;
+            if(i%print_freq == 0){
+                cout << i <<std::endl;
+                cout << objects[m].posx <<" "<<objects[m].posy <<" " << objects[m].speedx <<" " <<objects[m].speedy << endl;
+            }
         }
         
 
-        //update pos for the squeres that dont hit anything
         
     }
     delete objects;
     delete new_objects;
+    auto end = high_resolution_clock::now();
+    duration<double> elapsed = end - start;
+    cerr << elapsed.count();
 
 return 0;
 }
