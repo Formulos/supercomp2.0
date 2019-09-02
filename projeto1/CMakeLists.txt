@@ -11,4 +11,4 @@ add_executable(main_two main.cc square.cpp)
 target_compile_definitions(main_two PUBLIC O2)
 
 add_executable(main_fast main.cc square.cpp)
-target_compile_definitions(main_fast PUBLIC S c O3 ftree-vectorize mavx )
+target_compile_definitions(main_fast PUBLIC O3 ftree-vectorize mavx ffast-math)

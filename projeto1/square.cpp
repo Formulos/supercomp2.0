@@ -28,13 +28,11 @@ square square::colide(square c_square){
         (c_square.posx <= (posx+width))&&
         ((c_square.posy + c_square.height) >= posy)&&
         (c_square.posy <= (posy+height)))){
-    cout <<"miss"<< endl;
      ci = false;
      c_square.ci = false;
     }
     
     else{
-        cout <<"hit"<< endl;
         
         ci = true;
         c_square.ci = true;

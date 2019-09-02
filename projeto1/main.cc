@@ -3,8 +3,6 @@
 #include <chrono>
 #include <math.h>
 
-#define AAA cout << "AAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
-
 using namespace std;
 using namespace chrono;
 
@@ -88,9 +86,7 @@ int main(){
 
 
     //simulation loop
-    for (int i = 0; i < max_time; i+=step){
-            cout << max_time<< endl;
-
+    for (double i = 0; i < max_time; i+=step){
         
 
         //calculates the next position of the square
@@ -163,7 +159,15 @@ int main(){
         }
 
         //update pos for the squeres that dont hit anything
+        int temp_i = round(i);
+        if(temp_i%print_freq == 0){
+            cout <<"\n"<< i <<std::endl;
+        }
+
         for (int m = 0; m < n; m++){
+            
+
+
             if (!(new_objects[m].ci)){
                 swap(objects[m] , new_objects[m]);
                 //objects[m] = new_objects[m];
@@ -174,9 +178,11 @@ int main(){
                 //swap(objects[m].speedy , new_objects[m].speedy);
             }
             // temp code
+
             
-            if(i%print_freq == 0){
-                cout << i <<std::endl;
+            
+            if(temp_i%print_freq == 0){
+                
                 cout << objects[m].posx <<" "<<objects[m].posy <<" " << objects[m].speedx <<" " <<objects[m].speedy << endl;
             }
         }
