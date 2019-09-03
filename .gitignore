@@ -1,6 +1,7 @@
 build/
 .vscode/
 .ipynb_checkpoints/
+*.out
 
 # Prerequisites
 *.d
