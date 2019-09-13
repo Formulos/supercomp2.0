@@ -86,7 +86,7 @@ int main(){
 
 
     //simulation loop
-    for (double i = 0; i < max_time; i+=step){
+    for (int i = 0; i <= max_time; i++){
         
 
         //calculates the next position of the square
@@ -159,8 +159,7 @@ int main(){
         }
 
         //update pos for the squeres that dont hit anything
-        int temp_i = round(i);
-        if(temp_i%print_freq == 0){
+        if(i%print_freq == 0){
             cout <<"\n"<< i <<std::endl;
         }
 
@@ -181,7 +180,7 @@ int main(){
 
             
             
-            if(temp_i%print_freq == 0){
+            if(i%print_freq == 0){
                 
                 cout << objects[m].posx <<" "<<objects[m].posy <<" " << objects[m].speedx <<" " <<objects[m].speedy << endl;
             }
