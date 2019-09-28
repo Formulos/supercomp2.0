@@ -108,10 +108,7 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
     //all_seq[0] = best_seq;
 
     for (int i=0;i<n;i++){
-        all_seq[i] = new int;
-    }
-
-    for (int i = 0; i < n; i++){
+        all_seq[i] = new int[n];
         for(int j = 0;j<n;j++){
             all_seq[i][j]= best_seq[j];
         }
@@ -160,16 +157,16 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
 
     }
 
-    best_seq = all_seq[0];
+    best_seq = all_seq[index_max];
 
     for(int i=0 ;i < n; i++){
         std::cout << best_seq[i] << " ";
     }
     cout << endl;
     
-    //for (int i=0 ;i < n; i++){
-    //    delete all_seq[i];
-    //}
+    for (int i=0 ;i < n; i++){
+        delete all_seq[i];
+    }
     return best_cost;
 
     }
