@@ -28,7 +28,7 @@ int backtrack_seq(place *points,int n,int idx,double curr_cost,int *curr_sol,
                 best_seq[i] = curr_sol[i];
             }
             best_cost = curr_cost;
-            cerr << "best: " << best_cost << endl;
+            //cerr << "best: " << best_cost << endl;
         }
         return best_cost;
     }
@@ -70,7 +70,7 @@ int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol,
                 best_seq[i] = curr_sol_para[i];
             }
             best_cost = curr_cost;
-            cerr << "best: " << best_cost << endl;
+            //cerr << "best: " << best_cost << endl;
         }
         return best_cost;
     }
@@ -113,9 +113,6 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
             all_seq[i][j]= best_seq[j];
         }
     }
-    
-
-    
 
     if (idx == n){
         curr_cost += dist(points[curr_sol[0]], points[curr_sol[n-1]]);
@@ -149,7 +146,6 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
 
     int index_max;
     for (int i=1 ;i < n; i++){
-        cout << "laala: " << all_cost[i] <<endl;
         if (best_cost > all_cost[i]){
             best_cost = all_cost[i];
             index_max = i;
@@ -157,15 +153,13 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
 
     }
 
-    best_seq = all_seq[index_max];
-
+    //jeito horrivel de fazer isso
     for(int i=0 ;i < n; i++){
-        std::cout << best_seq[i] << " ";
+        best_seq[i] = all_seq[index_max][i];
     }
-    cout << endl;
     
     for (int i=0 ;i < n; i++){
-        delete all_seq[i];
+        delete all_seq[i];   
     }
     return best_cost;
 
@@ -208,22 +202,22 @@ int main(){
 
     #pragma omp parallel
     {
-        #pragma omp master
+        #pragma omp single
         {
         backtrack_zero(points,n, 1, 0, curr_sol, numeric_limits<int>::max(), best_sol,usado);
         }
     }
 
-    std::cout << path_dist(best_sol, points,n) << " 1" << endl;
+    cout << path_dist(best_sol, points,n) << " 1" << endl;
 
     for(int i=0 ;i < n; i++){
-        std::cout << best_sol[i] << " ";
+        cout << best_sol[i] << " ";
     }
-    std::cout << endl;
+    cout << endl;
 
     delete points;
     delete usado;
     delete best_sol;
-    //delete curr_sol;
+    delete curr_sol;
     return 0;
 }
