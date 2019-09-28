@@ -102,14 +102,23 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
     int task_max_number = n-1;
 
     double all_cost[n];
-    int *all_seq[n];
 
+    int *all_seq[n]; 
+    
     //all_seq[0] = best_seq;
-    //all_seq[0][0];
 
     for (int i=0;i<n;i++){
-        all_seq[i] = best_seq;
+        all_seq[i] = new int;
     }
+
+    for (int i = 0; i < n; i++){
+        for(int j = 0;j<n;j++){
+            all_seq[i][j]= best_seq[j];
+        }
+    }
+    
+
+    
 
     if (idx == n){
         curr_cost += dist(points[curr_sol[0]], points[curr_sol[n-1]]);
@@ -129,29 +138,38 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
             curr_sol[idx] = i;
 
             double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
-            //#pragma omp task
-            //{
+            #pragma task
+            {
             all_cost[i] = backtrack_task(points,n , idx+1, new_cost, curr_sol, best_cost, all_seq[i],usado);
-            //}
+            }
             
 
             usado[i] = false;
             curr_sol[idx] = -1;
         }
     }
-    //#pragma taskwait
+    #pragma taskwait
 
     int index_max;
     for (int i=1 ;i < n; i++){
+        cout << "laala: " << all_cost[i] <<endl;
         if (best_cost > all_cost[i]){
             best_cost = all_cost[i];
             index_max = i;
         }
 
     }
-    best_seq = all_seq[index_max];
-    //delete all_seq;
 
+    best_seq = all_seq[0];
+
+    for(int i=0 ;i < n; i++){
+        std::cout << best_seq[i] << " ";
+    }
+    cout << endl;
+    
+    //for (int i=0 ;i < n; i++){
+    //    delete all_seq[i];
+    //}
     return best_cost;
 
     }
@@ -209,6 +227,6 @@ int main(){
     delete points;
     delete usado;
     delete best_sol;
-    delete curr_sol;
+    //delete curr_sol;
     return 0;
 }
