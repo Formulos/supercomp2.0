@@ -143,7 +143,6 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         curr_sol_para[i][idx] = i;
 
         double new_cost = dist(points[0], points[i]);
-        cout<< "new_cost: "<<new_cost <<endl;
         #pragma omp task firstprivate(idx,new_cost,best_cost)
         {
         
