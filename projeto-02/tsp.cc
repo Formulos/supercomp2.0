@@ -132,6 +132,12 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
             best_cost = curr_cost;
             cerr << "best: " << best_cost << endl;
         }
+        for (int i=0 ;i < n; i++){
+            delete all_seq[i];
+            delete usado_para[i]; 
+            delete curr_sol_para[i];   
+        }
+        delete all_cost;
         return best_cost;
     }
 
@@ -142,7 +148,9 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
         #pragma omp task firstprivate(idx,new_cost,best_cost)
         {
+        
         backtrack_task(points,n , idx+1, new_cost, curr_sol_para[i], best_cost, all_seq[i],usado_para[i],all_cost,i);
+
         }
 
 
@@ -171,6 +179,7 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         delete usado_para[i]; 
         delete curr_sol_para[i];   
     }
+    delete all_cost;
     return best_cost;
 
     }
@@ -214,7 +223,11 @@ int main(){
     {
         #pragma omp single
         {
+        auto start = high_resolution_clock::now();
         backtrack_zero(points,n, 1, 0, curr_sol, numeric_limits<int>::max(), best_sol,usado);
+        auto end = high_resolution_clock::now();
+        duration<double> elapsed = end - start;
+        cerr << elapsed.count() << endl;
         }
     }
 
