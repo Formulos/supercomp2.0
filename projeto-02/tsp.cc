@@ -50,8 +50,44 @@ int backtrack_seq(place *points,int n,int idx,double curr_cost,int *curr_sol,
     }
 
 int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol, 
-              double best_cost,int *best_seq,bool *usado){
+              double best_cost,int *best_seq,bool *usado,int *all_cost,int vector_place){
 
+
+    if (idx == n){
+        curr_cost += dist(points[curr_sol[0]], points[curr_sol[n-1]]);
+        if (curr_cost < best_cost){
+            for (int i=0;i<n;i++){
+                best_seq[i] = curr_sol[i];
+            }
+            
+            best_cost = curr_cost;
+            //cerr << "best: " << best_cost << endl;
+        }
+        all_cost[vector_place] = best_cost;
+        return best_cost;
+    }
+
+    for (int i=0 ;i < n; i++){
+        if (!usado[i]){
+            usado[i] = true;
+            curr_sol[idx] = i;
+
+            double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
+            best_cost = backtrack_seq(points,n , idx+1, new_cost, curr_sol, best_cost, best_seq,usado);
+
+            usado[i] = false;
+            curr_sol[idx] = -1;
+        }
+    }
+    all_cost[vector_place] = best_cost;
+    return best_cost;
+
+    }
+
+int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol, 
+              double best_cost,int *best_seq,bool *usado){
+    
+    /*
     bool *usado_para;
     usado_para = new bool[n];
 
@@ -62,55 +98,28 @@ int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol,
         usado_para[i] = usado[i];
         curr_sol_para[i] = curr_sol[i];
     }
+    */
 
-    if (idx == n){
-        curr_cost += dist(points[curr_sol_para[0]], points[curr_sol_para[n-1]]);
-        if (curr_cost < best_cost){
-            for (int i=0;i<n;i++){
-                best_seq[i] = curr_sol_para[i];
-            }
-            best_cost = curr_cost;
-            //cerr << "best: " << best_cost << endl;
-        }
-        return best_cost;
-    }
-
-    for (int i=0 ;i < n; i++){
-        if (!usado_para[i]){
-            usado_para[i] = true;
-            curr_sol_para[idx] = i;
-
-            double new_cost = curr_cost + dist(points[curr_sol_para[idx-1]], points[curr_sol_para[idx]]);
-            best_cost = backtrack_seq(points,n , idx+1, new_cost, curr_sol_para, best_cost, best_seq,usado_para);
-
-            usado_para[i] = false;
-            curr_sol_para[idx] = -1;
-        }
-    }
-
-    delete usado_para;
-    delete curr_sol_para;
-
-    return best_cost;
-
-    }
-
-int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol, 
-              double best_cost,int *best_seq,bool *usado){
-    
 
     int task_max_number = n-1;
 
-    double all_cost[n];
-
-    int *all_seq[n]; 
+    int *all_cost;
+    all_cost = new int[n];
+    int *all_seq[n];
+    bool *usado_para[n];
+    int *curr_sol_para[n];
     
-    //all_seq[0] = best_seq;
+
 
     for (int i=0;i<n;i++){
         all_seq[i] = new int[n];
+        curr_sol_para[i] = new int[n];
+        usado_para[i] = new bool[n];
+        
         for(int j = 0;j<n;j++){
             all_seq[i][j]= best_seq[j];
+            usado_para[i][j]= usado[j];
+            curr_sol_para[i][j] = curr_sol[j];
         }
     }
 
@@ -126,23 +135,22 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         return best_cost;
     }
 
-    for (int i=0 ;i < n; i++){
-        if (!usado[i]){
-            usado[i] = true;
-            curr_sol[idx] = i;
+    for (int i=1 ;i < n; i++){
+        usado_para[i][i] = true;
+        curr_sol_para[i][idx] = i;
 
-            double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
-            #pragma task
-            {
-            all_cost[i] = backtrack_task(points,n , idx+1, new_cost, curr_sol, best_cost, all_seq[i],usado);
-            }
-            
-
-            usado[i] = false;
-            curr_sol[idx] = -1;
+        double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
+        #pragma omp task firstprivate(idx,new_cost,best_cost)
+        {
+        backtrack_task(points,n , idx+1, new_cost, curr_sol_para[i], best_cost, all_seq[i],usado_para[i],all_cost,i);
         }
+
+
+        //usado_para[i][i] = false;
+        //curr_sol_para[i][idx] = -1;
     }
-    #pragma taskwait
+    #pragma omp taskwait
+
 
     int index_max;
     for (int i=1 ;i < n; i++){
@@ -159,7 +167,9 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
     }
     
     for (int i=0 ;i < n; i++){
-        delete all_seq[i];   
+        delete all_seq[i];
+        delete usado_para[i]; 
+        delete curr_sol_para[i];   
     }
     return best_cost;
 
