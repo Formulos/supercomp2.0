@@ -27,6 +27,7 @@ def backtrack(points, idx, curr_cost, curr_sol,
             curr_sol[idx] = i
 
             new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]])
+            print("new_cost: " ,new_cost)
             best_cost = backtrack(points, idx+1, new_cost, curr_sol, best_cost, best_seq)
 
             usado[i] = False

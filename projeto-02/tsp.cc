@@ -49,7 +49,7 @@ int backtrack_seq(place *points,int n,int idx,double curr_cost,int *curr_sol,
 
     }
 
-int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol, 
+void backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol, 
               double best_cost,int *best_seq,bool *usado,int *all_cost,int vector_place){
 
 
@@ -64,7 +64,6 @@ int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol,
             //cerr << "best: " << best_cost << endl;
         }
         all_cost[vector_place] = best_cost;
-        return best_cost;
     }
 
     for (int i=0 ;i < n; i++){
@@ -80,7 +79,6 @@ int backtrack_task(place *points,int n,int idx,double curr_cost,int *curr_sol,
         }
     }
     all_cost[vector_place] = best_cost;
-    return best_cost;
 
     }
 
@@ -130,7 +128,6 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
                 best_seq[i] = curr_sol[i];
             }
             best_cost = curr_cost;
-            cerr << "best: " << best_cost << endl;
         }
         for (int i=0 ;i < n; i++){
             delete all_seq[i];
@@ -145,11 +142,12 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         usado_para[i][i] = true;
         curr_sol_para[i][idx] = i;
 
-        double new_cost = curr_cost + dist(points[curr_sol[idx-1]], points[curr_sol[idx]]);
+        double new_cost = dist(points[0], points[i]);
+        cout<< "new_cost: "<<new_cost <<endl;
         #pragma omp task firstprivate(idx,new_cost,best_cost)
         {
         
-        backtrack_task(points,n , idx+1, new_cost, curr_sol_para[i], best_cost, all_seq[i],usado_para[i],all_cost,i);
+        backtrack_task(points,n , idx+1, new_cost, curr_sol_para[i], numeric_limits<int>::max(), all_seq[i],usado_para[i],all_cost,i);
 
         }
 
@@ -162,6 +160,7 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
 
     int index_max;
     for (int i=1 ;i < n; i++){
+        cout << "costs: "<< all_cost[i]<< endl; 
         if (best_cost > all_cost[i]){
             best_cost = all_cost[i];
             index_max = i;

@@ -19,8 +19,44 @@ double path_dist(int *seq, place *points,int n){
     return d;
     }
 
-void solver(place *points,int n,int *solution){
+void swap_2opt(int *aux,int i, int j){
+    std::swap(aux[i], aux[j]);
+}
 
+void solver(place *points,int n,int *solution){
+    bool improved = true;
+
+    int *aux;
+    aux = new int[n];
+
+    for (int k = 0; k < n; k++){
+        aux[k] = solution[k];
+    }
+
+    while (improved){
+        
+        double current_best = path_dist(solution,points,n);
+        improved = false;
+        for (int i = 0; i < n; i++){
+            for (int j = i+1; j < n; j++){
+            swap_2opt(aux,i,j);
+            double possibel_best = path_dist(aux,points,n);
+            if (possibel_best < current_best){
+                improved = true;
+                current_best = possibel_best;
+                for (int k = 0; k < n; k++){
+                    solution[k] = aux[k];
+                    
+                }
+            }
+
+            }
+            
+        }
+        
+    }
+    delete aux;
+    
 }
 
 int main(){
