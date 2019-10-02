@@ -121,22 +121,6 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
         }
     }
 
-    if (idx == n){
-        curr_cost += dist(points[curr_sol[0]], points[curr_sol[n-1]]);
-        if (curr_cost < best_cost){
-            for (int i=0;i<n;i++){
-                best_seq[i] = curr_sol[i];
-            }
-            best_cost = curr_cost;
-        }
-        for (int i=0 ;i < n; i++){
-            delete all_seq[i];
-            delete usado_para[i]; 
-            delete curr_sol_para[i];   
-        }
-        delete all_cost;
-        return best_cost;
-    }
 
     for (int i=1 ;i < n; i++){
         usado_para[i][i] = true;
@@ -173,11 +157,11 @@ int backtrack_zero(place *points,int n,int idx,double curr_cost,int *curr_sol,
     }
     
     for (int i=0 ;i < n; i++){
-        delete all_seq[i];
-        delete usado_para[i]; 
-        delete curr_sol_para[i];   
+        delete[] all_seq[i];
+        delete[] usado_para[i]; 
+        delete[] curr_sol_para[i];
     }
-    delete all_cost;
+    delete[] all_cost;
     return best_cost;
 
     }
@@ -216,7 +200,6 @@ int main(){
     curr_sol[0] = 0;
     usado[0] = true;
 
-
     #pragma omp parallel
     {
         #pragma omp single
@@ -228,7 +211,7 @@ int main(){
         cerr << elapsed.count() << endl;
         }
     }
-
+    
     cout << path_dist(best_sol, points,n) << " 1" << endl;
 
     for(int i=0 ;i < n; i++){
@@ -236,9 +219,9 @@ int main(){
     }
     cout << endl;
 
-    delete points;
-    delete usado;
-    delete best_sol;
-    delete curr_sol;
+    delete[] points;
+    delete[] usado;
+    delete[] best_sol;
+    delete[] curr_sol;
     return 0;
 }

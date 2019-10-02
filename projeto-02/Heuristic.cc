@@ -33,48 +33,43 @@ vector<int> swap_2opt(vector<int> aux,int i, int j){
 vector<int> solver(place *points,int n){
     unsigned seed = system_clock::now().time_since_epoch().count();
     auto rng = default_random_engine {seed};
-    int max = 1000;
+    int max = 1;
     vector<vector<int>> solution_list(max,vector<int>(n));
-    vector<int> aux;
-    vector<int> solution;
+    vector<int> aux; // cotem todos nodes não usados
+    vector<int> point_list;
+    vector<int> solution; // comtem a solução, sempre começa em zero
+    vector<double> dist_list;
 
-    for (int i=0 ;i < n; i++){
-        solution.push_back(i);
+    solution.push_back(0);
+    for (int i=1 ;i < n; i++){
+        aux.push_back(i);
+        solution.push_back(-1);
+        dist_list.push_back(-1);
     }
     
-    #pragma omp parallel for shared(solution_list) firstprivate(aux,solution)
-    for (int i = 0; i < max; i++)
-    {
-        std::shuffle(solution.begin()+1, solution.end(), rng);
-    
-        bool improved = true;
-        aux = solution;
-        while (improved){
-            double current_best = path_dist(solution,points,n);
-            improved = false;
-            for (int i = 1; i < n; i++){
-                for (int j = i+1; j < n; j++){
-                aux = swap_2opt(aux,i,j);
-                double possibel_best = path_dist(aux,points,n);
-                if (possibel_best < current_best){
-                    improved = true;
-                    current_best = possibel_best;
-                    solution = aux;
 
-                }
+    for (int i = 0; i < n-1; i++){
+        int best_node = -1;
+        double best_dist = numeric_limits<double>::max();
+        int pos = -1;
 
-                }
-                
-            }
-        
-        
+        #pragma omp parallel for
+        for (int j = 0; j < aux.size(); j++){
+            dist_list[j] = dist(points[solution[i]], points[aux[j]]);
         }
-        solution_list[i] = solution;
+        for(int j =0; j < aux.size();j++){
+            if (dist_list[j] < best_dist){
+                best_dist = dist_list[j];
+                best_node = aux[j];
+                pos = j;
+            }
+        }
+        aux.erase(aux.begin()+pos); // o melhor node ja foi usado
+
+        solution[i+1] = best_node;
     }
-    for (int i = 0; i < max; i++){
-        path_dist(solution, points,n) > path_dist(solution_list[i], points,n);
-        solution =solution_list[i];
-    }
+        
+    
     return solution;
 }
 
