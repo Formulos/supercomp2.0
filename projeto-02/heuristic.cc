@@ -103,7 +103,7 @@ int main(){
     cerr << elapsed.count() << endl;
 
 
-    cout << path_dist(solution, points,n) << " 1" << endl;
+    cout << path_dist(solution, points,n) << " 0" << endl;
 
     for(int i=0 ;i < n; i++){
         cout << solution[i] << " ";
