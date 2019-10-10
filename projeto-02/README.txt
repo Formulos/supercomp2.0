@@ -22,4 +22,4 @@ O formato de saída será
 * `opt` é `1` se a solução encontrada é a ótima e `0` se foi usada outra estratégia
 * depois que a simulação acaba o seu tempo de execução sai pelo cerr
 
-Existe testes ja prontos como teste1.txt, para usalos rode o programa compilado e faça um pipe do arquivo para o programa
+Existe testes ja prontos como teste1.txt, para usá-los rode o programa compilado e faça um pipe do arquivo para o programa

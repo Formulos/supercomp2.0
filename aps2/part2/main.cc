@@ -161,6 +161,21 @@ double pi_omp_parallel_critical_errado(long steps){
     return pi;
 }
 
+double pi_omp_parallel_for(long steps){
+    double step;
+    double x, pi, sum = 0.0;
+    step = 1.0 / (double)steps;
+
+    #pragma parralel for reduction(+:sum)
+    for (int i = 0; i < steps; i++) {
+        x = (i + 0.5) * step;
+        sum += sum + 4.0 / (1.0 + x * x);
+    }
+    
+    pi = step * sum;
+    return pi;
+}
+
 int main() {
     double pi;
 
@@ -197,6 +212,11 @@ int main() {
     std::cout.precision(17);
     std::cout << pi << std::endl;
 
+    pi = pi_omp_parallel_for(num_steps);
+    auto end_time_omp_parallel_for = std::chrono::high_resolution_clock::now();
+    std::cout.precision(17);
+    std::cout << pi << std::endl;
+
     
     
     auto runtime_t = std::chrono::duration_cast<std::chrono::milliseconds> (end_time_threads - start_time);
@@ -205,6 +225,8 @@ int main() {
     auto runtime_a = std::chrono::duration_cast<std::chrono::milliseconds> (end_time_omp_parallel_atomic - end_time_omp_parallel);
     auto runtime_c = std::chrono::duration_cast<std::chrono::milliseconds> (end_time_omp_parallel_critical - end_time_omp_parallel_atomic);
     auto runtime_c_e = std::chrono::duration_cast<std::chrono::milliseconds> (end_time_omp_parallel_critical_errado - end_time_omp_parallel_critical);
+    auto runtime_p_f = std::chrono::duration_cast<std::chrono::milliseconds> (end_time_omp_parallel_for - end_time_omp_parallel_critical_errado);
+
 
     
     std::cout << "O valor de pi calculado com " << num_steps << " passos levou "<<std::endl;
@@ -214,6 +236,8 @@ int main() {
     std::cout << runtime_a.count() << " milisegundos(s) com atomic"<<std::endl;
     std::cout << runtime_c.count() << " milisegundos(s) com critical"<<std::endl;
     std::cout << runtime_c_e.count() << " milisegundos(s) com critical errado"<<std::endl;
+    std::cout << runtime_p_f.count() << " milisegundos(s) com for reduction"<<std::endl;
+
 
 
 }
