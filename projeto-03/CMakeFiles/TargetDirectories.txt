@@ -1,0 +1,8 @@
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/para.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/edit_cache.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/seq.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/rebuild_cache.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/heuristic.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/opt_seq.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/opt.dir
+/home/formulos/Documents/github/supercomp2.0/projeto-03/CMakeFiles/heuristic_seq.dir

@@ -1,0 +1,7 @@
+4
+10 10
+12 10
+10 8
+12 4
+
+feito especificamente para o 2_opt

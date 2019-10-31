@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/opt.dir/2_opt.cc.o CMakeFiles/opt.dir/place.cpp.o  -o opt /usr/lib/gcc/x86_64-linux-gnu/7/libgomp.so -lpthread 
