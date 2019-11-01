@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/seq.dir/tsp.cc.o CMakeFiles/seq.dir/place.cpp.o  -o seq 

@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/opt_seq.dir/2_opt.cc.o CMakeFiles/opt_seq.dir/place.cpp.o  -o opt_seq 

@@ -43,36 +43,39 @@ __global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
 
 __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int begin = (i*n)+1;
-    int end = begin +n -2; //-1 begin esta começando no 1 e mais -1 para acabar no final da lista não no começo do proximo
+    if (i < n){
+        int begin = (i*n);
+        int end = begin +n -1; //-1 para acabar no final da lista não no começo do proximo (end inclusivo)
 
-    curandState st;
-    curand_init(0, i, 0, &st);
+        curandState st;
+        curand_init(0, i, 0, &st);
 
-    for(int j=begin;j< end;j++){
+        for(int j=begin+1;j < end - 1;j++){
 
-        int place = (int) ((end-j) * curand_uniform(&st) + j);
+            int place = (int) ((end-j-1) * curand_uniform(&st) + j);
 
-        int tmp;
-        tmp = all_seq[begin];
-        all_seq[begin] = all_seq[place];
-        all_seq[place] = tmp;
+            int tmp;
+            tmp = all_seq[j];
+            all_seq[j] = all_seq[place];
+            all_seq[place] = tmp;
+        }
+
+        double my_dist = 0;
+
+        for(int j=begin;j< end;j++){
+            my_dist += dist_matrix[(all_seq[j]*n+all_seq[j+1])];
+        }
+
+        dis_calc[i] = my_dist;
     }
-
-    double my_dist = 0;
-
-    for(int j=begin;j< end;j++){
-        my_dist += dist_matrix[(all_seq[j]*n+all_seq[j+1])];
-    }
-
-    dis_calc[i] = my_dist;
 
 
     
 }
 
 int main(){
-    const int maximum = 1;
+    const int max_blocks = 1;
+    const int total_iter = max_blocks*3;
     int n;
     cin >> n;
 
@@ -104,7 +107,7 @@ int main(){
 
     thrust::device_vector<double> dist_matrix(n*n);
 
-    dim3 blocks(ceil(1024.0/n), ceil(1024.0/n), 1);
+    dim3 blocks(ceil(n/32.0), ceil(n/32.0), 1);
     dim3 th(32, 32, 1);
 
     
@@ -116,12 +119,12 @@ int main(){
         n
         );
     
-    //int all_seq_size = n*maximum*1024;
-    int all_seq_size = n*3;
+    //int all_seq_size = n*total_iter;
+    int all_seq_size = n*2;
     
     thrust::host_vector<int> all_seq_host(all_seq_size);
     thrust::device_vector<int> all_seq(all_seq_size);
-    thrust::device_vector<double> dis_calc(maximum* 3);
+    thrust::device_vector<double> dis_calc(2);
 
 
 
@@ -137,31 +140,30 @@ int main(){
     all_seq = all_seq_host;
 
     
-    solver<<<1,3>>>(
+    solver<<<max_blocks,2>>>(
         thrust::raw_pointer_cast(dist_matrix.data()),
         thrust::raw_pointer_cast(all_seq.data()),
         thrust::raw_pointer_cast(dis_calc.data()),
         n
         );
 
-    thrust::host_vector<double> host_dis_calc(maximum* 3);
-    thrust::device_vector<double> best_seq(n);
-    thrust::host_vector<double> host_best_seq(n);
-
-    host_dis_calc = dis_calc;
-    int index_mult = 0;
-
-    double best = host_dis_calc[0];
-    for (int i =1;i<= 3;i++){
-        if(host_dis_calc[0] < best){
-            best = host_dis_calc[0];
-            index_mult = i;
-        }
-    }
-
-    thrust::copy_n(all_seq.begin()+(1*index_mult),n,best_seq.begin());
-
     
+
+    thrust::device_vector<double>::iterator iter = thrust::min_element(dis_calc.begin(), dis_calc.end());
+      
+    unsigned int position = iter - dis_calc.begin();
+    double best = *iter;
+      
+    thrust::host_vector<double> host_best_seq(all_seq.begin()+position*n,all_seq.begin()+position*n+n);
+
+    /*cout << best <<endl;
+    for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
+        cout << *i << " ";
+    }*/
+    
+    
+    //DEBUG
+    cout << best <<endl;
     for (auto i = all_seq.begin(); i != all_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
     }
@@ -170,19 +172,10 @@ int main(){
         cout << *i << " "; // este acesso é lento! -- GPU
     }
     cout << endl;
-    for (auto i = best_seq.begin(); i != best_seq.end(); i++) {
+    for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
     }
-
-    /*
-    solver(points,n);
-    cout << path_dist(solution, points,n) << " 0" << endl;
-
-    for(int i=0 ;i < n; i++){
-        cout << solution[i] << " ";
-    }
-    cout << endl;
-    */
+    
 
     return 0;
 }

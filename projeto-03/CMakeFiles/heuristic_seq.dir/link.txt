@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/heuristic_seq.dir/heuristic.cc.o CMakeFiles/heuristic_seq.dir/place.cpp.o  -o heuristic_seq 
