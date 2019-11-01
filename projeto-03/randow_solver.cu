@@ -41,16 +41,16 @@ __global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
     }
 }
 
-__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
+__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,int total_iter){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < n){
+    if (i < total_iter){
         int begin = (i*n);
         int end = begin +n -1; //-1 para acabar no final da lista não no começo do proximo (end inclusivo)
 
         curandState st;
         curand_init(0, i, 0, &st);
 
-        for(int j=begin+1;j < end - 1;j++){
+        for(int j=begin+1;j < end;j++){
 
             int place = (int) ((end-j-1) * curand_uniform(&st) + j);
 
@@ -74,8 +74,9 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
 }
 
 int main(){
-    const int max_blocks = 1;
-    const int total_iter = max_blocks*3;
+    const int max_blocks = 10;
+    const int max_th = 1024;
+    const int total_iter = 100000;
     int n;
     cin >> n;
 
@@ -119,12 +120,11 @@ int main(){
         n
         );
     
-    //int all_seq_size = n*total_iter;
-    int all_seq_size = n*2;
+    int all_seq_size = n*total_iter;
     
     thrust::host_vector<int> all_seq_host(all_seq_size);
     thrust::device_vector<int> all_seq(all_seq_size);
-    thrust::device_vector<double> dis_calc(2);
+    thrust::device_vector<double> dis_calc(total_iter);
 
 
 
@@ -140,11 +140,12 @@ int main(){
     all_seq = all_seq_host;
 
     
-    solver<<<max_blocks,2>>>(
+    solver<<<max_blocks,max_th>>>(
         thrust::raw_pointer_cast(dist_matrix.data()),
         thrust::raw_pointer_cast(all_seq.data()),
         thrust::raw_pointer_cast(dis_calc.data()),
-        n
+        n,
+        total_iter
         );
 
     
