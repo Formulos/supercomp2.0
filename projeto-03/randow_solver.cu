@@ -25,10 +25,6 @@ __host__ __device__ double dist(float p1x,float p1y,float p2x,float p2y){
     return d;
     }*/
 
-__device__ void swap_2opt(vector<int> aux,int i, int j){
-
-}
-
 __global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
     int j = blockIdx.x * blockDim.x + threadIdx.x;
     int i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -76,7 +72,7 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,i
 int main(){
     const int max_blocks = 10;
     const int max_th = 1024;
-    const int total_iter = 100000;
+    const int total_iter = 10000;
     int n;
     cin >> n;
 
@@ -157,13 +153,14 @@ int main(){
       
     thrust::host_vector<double> host_best_seq(all_seq.begin()+position*n,all_seq.begin()+position*n+n);
 
-    /*cout << best <<endl;
+    cout << best <<endl;
     for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " ";
-    }*/
+    }
     
     
     //DEBUG
+    /*
     cout << best <<endl;
     for (auto i = all_seq.begin(); i != all_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
@@ -176,6 +173,7 @@ int main(){
     for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
     }
+    /**/
     
 
     return 0;

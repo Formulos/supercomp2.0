@@ -25,17 +25,7 @@ __host__ __device__ double dist(float p1x,float p1y,float p2x,float p2y){
     return d;
     }*/
 
-__global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //printf("%f \n", dist(x[i],y[i],x[j],y[j]));
-    
-
-    if ((i < n) && (j < n)){
-        dist_matrix[i*n +j] = dist(x[i],y[i],x[j],y[j]);
-    }
-}
 
 __device__ double find_dist(int begin,int end, double *dist_matrix, int *all_seq,int n){
     double my_dist = 0;
@@ -53,38 +43,47 @@ __device__ void opt_swap(int p1,int p2, int *vector){
 }
 
 
-__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < n){
-    int begin = (i*n)+1;
-    int end = begin +n -2; //-1 begin esta começando no 1 e mais -1 para acabar no final da lista não no começo do proximo
+__global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
 
-    curandState st;
-    curand_init(0, i, 0, &st);
-
-    for(int j=begin;j< end;j++){//init randow state
-
-        int place = (int) ((end-j) * curand_uniform(&st) + j);
-        opt_swap(j,place,all_seq);
-
-    }
-    /*
+    //printf("%f \n", dist(x[i],y[i],x[j],y[j]));
     
-    for (int i = 0; i < 100; i++){ // 100 =tmp
+
+    if ((i < n) && (j < n)){
+        dist_matrix[i*n +j] = dist(x[i],y[i],x[j],y[j]);
+    }
+}
+
+__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,int total_iter){
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < total_iter){
+        int begin = (i*n);
+        int last = begin +n -1; //-1 para acabar no final da lista não no começo do proximo (end inclusivo)
+
+        curandState st;
+        curand_init(0, i, 0, &st);
+
+        for(int j=begin+1;j < last;j++){
+            int place = (int) ((last-j-1) * curand_uniform(&st) + j);
+            opt_swap(j,place,all_seq);
+
+        }
+        
         bool improved = true;
-        aux = solution;
         while (improved){
-            double current_best = find_dist(begin,end, dist_matrix, all_seq,n);
+            double current_best = find_dist(begin,last, dist_matrix, all_seq,n);
             improved = false;
-            for (int i = 1; i < n; i++){
-                for (int j = i+1; j < n; j++){
-                aux = swap_2opt(aux,i,j);
-                double possibel_best = path_dist(aux,points,n);
+            for (int i = begin+1; i < last; i++){
+                for (int j = i+1; j < last; j++){
+                opt_swap(i,j,all_seq);
+                double possibel_best = find_dist(begin,last, dist_matrix, all_seq,n);
                 if (possibel_best < current_best){
                     improved = true;
                     current_best = possibel_best;
-                    solution = aux;
-
+                }
+                else{
+                    opt_swap(i,j,all_seq);//swap back
                 }
 
                 }
@@ -93,12 +92,13 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
         
         
         }
-        solution_list[i] = solution;
+        
+        
+        
+        double my_dist = find_dist(begin,last, dist_matrix, all_seq,n);
+
+        dis_calc[i] = my_dist;
     }
-    */
-    
-    double my_dist = find_dist(begin,end, dist_matrix, all_seq,n);
-    dis_calc[i] = my_dist;
 
 
     
@@ -106,7 +106,8 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n){
 
 int main(){
     const int max_blocks = 10;
-    const int total_iter = max_blocks*1024;
+    const int max_th = 1024;
+    const int total_iter = 10000;
     int n;
     cin >> n;
 
@@ -138,7 +139,7 @@ int main(){
 
     thrust::device_vector<double> dist_matrix(n*n);
 
-    dim3 blocks(ceil(1024.0/n), ceil(1024.0/n), 1);
+    dim3 blocks(ceil(n/32.0), ceil(n/32.0), 1);
     dim3 th(32, 32, 1);
 
     
@@ -151,7 +152,6 @@ int main(){
         );
     
     int all_seq_size = n*total_iter;
-    //int all_seq_size = n*3;
     
     thrust::host_vector<int> all_seq_host(all_seq_size);
     thrust::device_vector<int> all_seq(all_seq_size);
@@ -171,34 +171,31 @@ int main(){
     all_seq = all_seq_host;
 
     
-    solver<<<max_blocks,1024>>>(
+    solver<<<max_blocks,max_th>>>(
         thrust::raw_pointer_cast(dist_matrix.data()),
         thrust::raw_pointer_cast(all_seq.data()),
         thrust::raw_pointer_cast(dis_calc.data()),
-        n
+        n,
+        total_iter
         );
 
-    thrust::host_vector<double> host_dis_calc(total_iter);    
+    
 
-    host_dis_calc = dis_calc;
-    int index_mult = 0;
-
-    double best = host_dis_calc[0];
-    for (int i =1;i< total_iter;i++){
-        if(host_dis_calc[i] < best){
-            best = host_dis_calc[i];
-            index_mult = i;
-        }
-    }
-    thrust::host_vector<double> host_best_seq(all_seq.begin()+(n*index_mult),all_seq.begin()+(n*index_mult)+n);
+    thrust::device_vector<double>::iterator iter = thrust::min_element(dis_calc.begin(), dis_calc.end());
+      
+    unsigned int position = iter - dis_calc.begin();
+    double best = *iter;
+      
+    thrust::host_vector<double> host_best_seq(all_seq.begin()+position*n,all_seq.begin()+position*n+n);
 
     cout << best <<endl;
     for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " ";
     }
     
-    /*
+    
     //DEBUG
+    /*
     cout << best <<endl;
     for (auto i = all_seq.begin(); i != all_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
@@ -208,10 +205,11 @@ int main(){
         cout << *i << " "; // este acesso é lento! -- GPU
     }
     cout << endl;
-    for (auto i = best_seq.begin(); i != best_seq.end(); i++) {
+    for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " "; // este acesso é lento! -- GPU
     }
-    */
+    /**/
+    
 
     return 0;
 }
