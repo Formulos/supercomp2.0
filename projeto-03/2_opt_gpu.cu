@@ -13,7 +13,7 @@
 
 using namespace std;
 
-__device__ double dist(float p1x,float p1y,float p2x,float p2y){
+__host__ __device__ double dist(float p1x,float p1y,float p2x,float p2y){
     return sqrt(pow(p1x - p2x,2) + pow(p1y - p2y,2));
     }
 
@@ -55,110 +55,59 @@ __global__ void pre_calc(float *x,float *y,double *dist_matrix,int n){
     }
 }
 
-__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,int total_iter,int t_work = 1){
+__global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,int total_iter){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int idx = threadIdx.x;
-
-    extern __shared__ int seq_share[];
-    __shared__ double block_dist[1024];
     if (i < total_iter){
-        int flag = 0;
-        if(threadIdx.x ==0 ) flag =1;
-
-        //int begin = (i*n);
-        //int last = begin +n -1; // (inclusive end)
-        int begin = idx*n;
-        int last = begin +n -1;
-
-        //init seq in all_seq
-        /*
-        int tmp_counter = 0;
-        for(int j=begin;j <= last;j++){
-            all_seq[j] = tmp_counter;
-            s[] = tmp_counter;
-            tmp_counter++;
-        }
-        */
-        int tmp_counter = 0;
-        for(int j=begin;j <= last;j++){
-            seq_share[j] = tmp_counter;
-            tmp_counter++;
-        }        
-
-
+        int begin = (i*n);
+        int last = begin +n -1; //-1 para acabar no final da lista não no começo do proximo (end inclusivo)
 
         curandState st;
-        double t_best = find_dist(begin,last, dist_matrix, seq_share,n); // cant use numeric_limits<double>::max()    ):
-        for(int t=0;t<t_work;t++){
+        curand_init(0, i, 0, &st);
 
-            
+        for(int j=begin+1;j < last;j++){
+            int place = (int) ((last-j-1) * curand_uniform(&st) + j);
+            opt_swap(j,place,all_seq);
 
-            //suflle seq
-            curand_init(0, i+t, 0, &st);
-            for(int j=begin+1;j < last;j++){
-                int place = (int) ((last-j-1) * curand_uniform(&st) + j);
-                opt_swap(j,place,seq_share);
-            }
-            
-            bool improved = true;
-            double current_best = find_dist(begin,last, dist_matrix, seq_share,n);
-            while (improved){
-                improved = false;
-                for (int i = begin+1; i < last; i++){
-                    for (int j = i+1; j < last; j++){
-                    opt_swap(i,j,seq_share);
-                    double possibel_best = find_dist(begin,last, dist_matrix, seq_share,n);
-                    if (possibel_best < current_best){
-                        improved = true;
-                        current_best = possibel_best;
-                    }
-                    else{
-                        opt_swap(i,j,seq_share);//swap back
-                    }
-
-                    }
-                    
-                }
-            
-            
-            }
-
-            if (current_best < t_best) t_best=current_best;
-            
-            
-        }
-        block_dist[idx]=t_best;
-        __syncthreads();
-        //gets the best seq of the entire block
-        if (flag ==1){
-            int pos_best;
-            for(int j=0; j<1024;j++){
-                if((block_dist[j] <t_best) && block_dist[j] != 0){
-                    t_best =block_dist[j];
-                    pos_best = j;
-                }
-            }
-            int aux_place_block =blockIdx.x;
-            for(int j =pos_best*n;j<pos_best*n+n;j++){
-                all_seq[aux_place_block] = seq_share[j];
-                aux_place_block++;
-            }
-            dis_calc[blockIdx.x] = t_best;
         }
         
-    
+        bool improved = true;
+        while (improved){
+            double current_best = find_dist(begin,last, dist_matrix, all_seq,n);
+            improved = false;
+            for (int i = begin+1; i < last; i++){
+                for (int j = i+1; j < last; j++){
+                opt_swap(i,j,all_seq);
+                double possibel_best = find_dist(begin,last, dist_matrix, all_seq,n);
+                if (possibel_best < current_best){
+                    improved = true;
+                    current_best = possibel_best;
+                }
+                else{
+                    opt_swap(i,j,all_seq);//swap back
+                }
+
+                }
+                
+            }
+        
+        
+        }
+        
+        
+        
+        double my_dist = find_dist(begin,last, dist_matrix, all_seq,n);
+
+        dis_calc[i] = my_dist;
     }
-    __syncthreads();
 
 
     
 }
 
 int main(){
-    const int total_iter = 2000;
+    const int max_blocks = 10;
     const int max_th = 1024;
-    const int max_blocks = ceil((float) total_iter/max_th);    
-    
+    const int total_iter = 10000;
     int n;
     cin >> n;
 
@@ -202,12 +151,27 @@ int main(){
         n
         );
     
-
-    int all_seq_size = n*max_blocks;
+    int all_seq_size = n*total_iter;
+    
+    thrust::host_vector<int> all_seq_host(all_seq_size);
     thrust::device_vector<int> all_seq(all_seq_size);
-    thrust::device_vector<double> dis_calc(max_blocks);
+    thrust::device_vector<double> dis_calc(total_iter);
 
-    solver<<<max_blocks,max_th, 1024*n*sizeof(int)>>>(
+
+
+
+
+    for(int i=0;i<all_seq_size;i+=n){
+        for (int j=0;j<n;j++){
+            all_seq_host[i+j] = j;            
+        }
+    }
+    
+    //cout << "AAAAAAAAA" << endl;
+    all_seq = all_seq_host;
+
+    
+    solver<<<max_blocks,max_th>>>(
         thrust::raw_pointer_cast(dist_matrix.data()),
         thrust::raw_pointer_cast(all_seq.data()),
         thrust::raw_pointer_cast(dis_calc.data()),
