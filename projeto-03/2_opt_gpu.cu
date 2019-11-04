@@ -105,6 +105,11 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,i
 }
 
 int main(){
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
+
     const int max_blocks = 10;
     const int max_th = 1024;
     const int total_iter = 10000;
@@ -178,6 +183,8 @@ int main(){
         n,
         total_iter
         );
+        
+
 
     
 
@@ -187,11 +194,18 @@ int main(){
     double best = *iter;
       
     thrust::host_vector<double> host_best_seq(all_seq.begin()+position*n,all_seq.begin()+position*n+n);
+    cudaEventRecord(stop);
 
     cout << best <<endl;
     for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " ";
     }
+    cout << endl;
+
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cerr << "time in milliseconds: " << milliseconds << endl;
     
     
     //DEBUG
