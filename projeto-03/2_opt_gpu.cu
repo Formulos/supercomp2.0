@@ -29,7 +29,7 @@ __host__ __device__ double dist(float p1x,float p1y,float p2x,float p2y){
 
 __device__ double find_dist(int begin,int end, double *dist_matrix, int *all_seq,int n){
     double my_dist = 0;
-    for(int j=begin;j< end;j++){//calc final dist
+    for(int j=begin;j<= end;j++){//calc final dist
         my_dist += dist_matrix[(all_seq[j]*n+all_seq[j+1])];
     }
     return my_dist;
@@ -60,6 +60,13 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,i
     if (i < total_iter){
         int begin = (i*n);
         int last = begin +n -1; //-1 para acabar no final da lista não no começo do proximo (end inclusivo)
+
+
+        int tmp_counter = 0;
+        for(int j=begin;j <= last;j++){
+            all_seq[j] = tmp_counter;
+            tmp_counter++;
+        }    
 
         curandState st;
         curand_init(0, i, 0, &st);
@@ -159,22 +166,8 @@ int main(){
     
     int all_seq_size = n*total_iter;
     
-    thrust::host_vector<int> all_seq_host(all_seq_size);
     thrust::device_vector<int> all_seq(all_seq_size);
     thrust::device_vector<double> dis_calc(total_iter);
-
-
-
-
-
-    for(int i=0;i<all_seq_size;i+=n){
-        for (int j=0;j<n;j++){
-            all_seq_host[i+j] = j;            
-        }
-    }
-    
-    //cout << "AAAAAAAAA" << endl;
-    all_seq = all_seq_host;
 
     
     solver<<<max_blocks,max_th>>>(
