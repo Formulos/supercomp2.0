@@ -70,9 +70,14 @@ __global__ void solver(double *dist_matrix,int *all_seq,double *dis_calc,int n,i
 }
 
 int main(){
-    const int max_blocks = 10;
-    const int max_th = 1024;
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start);
+
     const int total_iter = 10000;
+    const int max_th = 1024;
+    const int max_blocks = ceil((double) total_iter/max_th);
     int n;
     cin >> n;
 
@@ -152,28 +157,19 @@ int main(){
     double best = *iter;
       
     thrust::host_vector<double> host_best_seq(all_seq.begin()+position*n,all_seq.begin()+position*n+n);
+    cudaEventRecord(stop);
 
-    cout << best <<endl;
+    cout << best << " 0" <<endl;
     for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
         cout << *i << " ";
     }
-    
-    
-    //DEBUG
-    /*
-    cout << best <<endl;
-    for (auto i = all_seq.begin(); i != all_seq.end(); i++) {
-        cout << *i << " "; // este acesso é lento! -- GPU
-    }
     cout << endl;
-    for (auto i = dis_calc.begin(); i != dis_calc.end(); i++) {
-        cout << *i << " "; // este acesso é lento! -- GPU
-    }
-    cout << endl;
-    for (auto i = host_best_seq.begin(); i != host_best_seq.end(); i++) {
-        cout << *i << " "; // este acesso é lento! -- GPU
-    }
-    /**/
+
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cerr << "time in milliseconds: " << milliseconds << endl;
+    
     
 
     return 0;
