@@ -65,6 +65,7 @@ int main(int argc, char *argv[]){
     vector<bool> usado;
     vector<int> curr_sol;
     vector<int> solution;
+    vector<int> best_solution;
     
 
     //int *best_sol;
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]){
             usado.push_back(false);
             curr_sol.push_back(-1);
             solution.push_back(-1);
+            best_solution.push_back(-1);
         }
     }
 
@@ -96,6 +98,7 @@ int main(int argc, char *argv[]){
             usado.push_back(false);
             curr_sol.push_back(-1);
             solution.push_back(-1);
+            best_solution.push_back(-1);
 
         }
     }
@@ -105,16 +108,52 @@ int main(int argc, char *argv[]){
     curr_sol[0] = 0;
     usado[0] = true;
 
+    double best_cost = numeric_limits<int>::max();
+    
+    
 
-    backtrack_seq(points,n, 1, 0, curr_sol, numeric_limits<int>::max(), solution,usado);
+    //1+3+5
+    for (int i = world.rank()+1; i < n; i = i + world.size()){
+        usado[i] = true;
+        curr_sol[1] = i;
+        //cout << i << " ";
+        double cost = dist(points[curr_sol[0]], points[curr_sol[1]]);
+        cost = backtrack_seq(points,n, 2, cost, curr_sol, numeric_limits<int>::max(), solution,usado);
+        //cout << cost << ",  " << best_cost << "\n";
+        if(best_cost > cost){
+            best_solution = solution;
+            best_cost = cost;
+        }
+        usado[i] = false;
+    }
+    
+    
 
     
-    cout << path_dist(solution, points,n) << " 1" << endl;
+    if(world.rank() == 0){
+        vector<vector<int>> all_seq(world.size());
+        mpi::gather(world,solution, all_seq, 0);
+        for (int i = 0; i < world.size(); i++){
+            if (path_dist(solution, points,n)> path_dist(all_seq[i], points,n)){
+                solution = all_seq[i];
+            }
+            for(int j=0 ;j < n; j++){
+                cerr << all_seq[i][j] << " ";
+            }
+        }
 
-    for(int i=0 ;i < n; i++){
-        cout << solution[i] << " ";
+        cout << path_dist(solution, points,n) << " 0" << endl;
+
+        for(int i=0 ;i < n; i++){
+            cout << solution[i] << " ";
+        }
+        cout << endl;
+        
+
     }
-    cout << endl;
+    else{
+       mpi::gather(world, solution, 0);
+    }
 
     return 0;
 }
