@@ -1,12 +1,15 @@
 #include "place.hpp"
 #include <iostream>
 #include <limits> 
-#include <vector> 
+#include <vector>
 #include <math.h>
+#include <chrono>
 #include <boost/mpi.hpp>
 #include <boost/serialization/string.hpp>
 
+
 using namespace std;
+using namespace chrono;
 namespace mpi = boost::mpi;
 
 double dist(place p1,place p2){
@@ -110,10 +113,13 @@ int main(int argc, char *argv[]){
 
     double best_cost = numeric_limits<int>::max();
     
-    
+    int size = world.size();
+    if (size >= n){
+        size = n-1;
+    }
 
-    //1+3+5
-    for (int i = world.rank()+1; i < n; i = i + world.size()){
+    auto start = high_resolution_clock::now();
+    for (int i = world.rank()+1; i < n; i = i + size){
         usado[i] = true;
         curr_sol[1] = i;
         //cout << i << " ";
@@ -131,15 +137,20 @@ int main(int argc, char *argv[]){
 
     
     if(world.rank() == 0){
-        vector<vector<int>> all_seq(world.size());
+        auto end = high_resolution_clock::now();
+        duration<double> elapsed = end - start;
+        cerr << elapsed.count() << endl;
+
+
+        vector<vector<int>> all_seq(size);
         mpi::gather(world,solution, all_seq, 0);
-        for (int i = 0; i < world.size(); i++){
+        for (int i = 0; i < size; i++){
             if (path_dist(solution, points,n)> path_dist(all_seq[i], points,n)){
                 solution = all_seq[i];
             }
-            for(int j=0 ;j < n; j++){
-                cerr << all_seq[i][j] << " ";
-            }
+            //for(int j=0 ;j < n; j++){
+            //    cerr << all_seq[i][j] << " ";
+            //}
         }
 
         cout << path_dist(solution, points,n) << " 0" << endl;

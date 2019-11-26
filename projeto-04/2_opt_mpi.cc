@@ -113,24 +113,26 @@ int main(int argc, char *argv[]){
     vector<int> solution;
 
 
-    //auto start = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
     solver(points,n,solution);
-    //auto end = high_resolution_clock::now();
-    //duration<double> elapsed = end - start;
-    //cerr << elapsed.count() << endl;
+
 
     
 
     if(world.rank() == 0){
+        auto end = high_resolution_clock::now();
+        duration<double> elapsed = end - start;
+        cerr << elapsed.count() << endl;
+
         vector<vector<int>> all_seq(world.size());
         mpi::gather(world,solution, all_seq, 0);
         for (int i = 0; i < world.size(); i++){
             if (path_dist(solution, points,n)> path_dist(all_seq[i], points,n)){
                 solution = all_seq[i];
             }
-            for(int j=0 ;j < n; j++){
-                cerr << all_seq[i][j] << " ";
-            }
+            //for(int j=0 ;j < n; j++){
+            //    cerr << all_seq[i][j] << " ";
+            //}
         }
 
         cout << path_dist(solution, points,n) << " 0" << endl;

@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.9)
-project (projeto_basico)
-find_package(OpenMP REQUIRED)
-find_package(CUDA REQUIRED)
-set(CUDA_HOST_COMPILER /usr/bin/gcc-6)
+project (projeto)
 
+find_package(Boost REQUIRED mpi serialization)
+find_package(MPI)
 
-cuda_add_executable(2opt-sol 2_opt_gpu.cu OPTIONS -std=c++11)
+add_executable(tsp tsp_mpi.cc place.cpp)
 
-cuda_add_executable(random-sol random_solver.cu OPTIONS -std=c++11)
+target_link_libraries(tsp Boost::mpi)
+target_link_libraries(tsp MPI::MPI_CXX)
 
-add_executable(opt_para 2_opt_para.cc place.cpp)
-target_link_libraries (opt_para OpenMP::OpenMP_CXX)
-target_compile_definitions(opt_para PUBLIC O3 fopenmp)
+add_executable(2_opt_mpi 2_opt_mpi.cc place.cpp)
+
+target_link_libraries(2_opt_mpi Boost::mpi)
+target_link_libraries(2_opt_mpi MPI::MPI_CXX)
