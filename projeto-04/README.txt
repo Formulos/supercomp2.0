@@ -1,7 +1,7 @@
 - Como compilar:
 esse progeto pode ser compilado usando cmake (CmakeList.txt ja esta incluso), simplesme usando o comando cmake e usando o make criado
 
-- Ao rodar o projeto é esperado os seguintes inputs:
+- Ao rodar o projeto (usando mpiexec) é esperado os seguintes inputs:
 
 A entrada de nosso programa será um conjunto de `N` pontos `x_i, y_i`. 
 
